@@ -1,0 +1,16 @@
+services:
+  dashcam-downloader:
+    build: .
+    container_name: dashcam-downloader
+    env_file:
+      - ./config/app.env
+    volumes:
+      - ./config:/app/config:ro
+      - ./downloads:/downloads
+    network_mode: host
+    restart: unless-stopped
+    labels:
+      - "logging=promtail"
+      - "service=dashcam-downloader"
+      - "environment=production"
+

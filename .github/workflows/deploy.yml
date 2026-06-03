@@ -1,0 +1,70 @@
+name: Deploy to Dashcam Downloader Server
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_HOST: 192.168.68.84
+  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+  DEPLOY_PATH: /home/${{ secrets.DEPLOY_USER }}/dashcam-downloader
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create deployment directories
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+            "mkdir -p ${{ env.DEPLOY_PATH }}/config ${{ env.DEPLOY_PATH }}/downloads"
+
+      - name: Sync files to server
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '__pycache__' \
+            --exclude '*.pyc' \
+            --exclude '.pytest_cache' \
+            --exclude 'config/app.env' \
+            --exclude 'downloads' \
+            ./ ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_PATH }}/
+
+      - name: Initialize config from example if needed
+        run: |
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            if [ ! -f "${{ env.DEPLOY_PATH }}/config/app.env" ]; then
+              cp ${{ env.DEPLOY_PATH }}/config/app.env.example ${{ env.DEPLOY_PATH }}/config/app.env
+              echo "Created config/app.env from example - update it before relying on production downloads"
+            fi
+          EOF
+
+      - name: Build and deploy
+        run: |
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}
+            docker compose config --quiet
+            docker compose down || true
+            docker compose build
+            docker compose up -d
+            docker compose ps
+          EOF
+
+      - name: Verify deployment
+        run: |
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+            "docker compose -f ${{ env.DEPLOY_PATH }}/docker-compose.yml logs --tail 30"
+
+      - name: Cleanup old Docker images
+        run: |
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} \
+            "docker image prune -f"
+
