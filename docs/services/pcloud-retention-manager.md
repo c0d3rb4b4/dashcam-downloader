@@ -76,7 +76,7 @@ dashcam-pcloud-retention-manager/
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 PCLOUD_USERNAME=<set-username>
 PCLOUD_PASSWORD=<set-password>
 PCLOUD_DESTINATION_ROOT=/Dashcam
@@ -285,7 +285,7 @@ Stages:
 4. Run pCloud client tests with mocked API responses.
 5. Run DB update tests against temporary PostgreSQL.
 6. Validate Docker compose.
-7. Deploy to `/home/${DEPLOY_USER}/dashcam-pcloud-retention-manager`.
+7. Deploy to `192.168.68.21:/home/${DEPLOY_USER}/dashcam-pcloud-retention-manager`.
 8. Preserve `config/app.env`.
 9. Build and restart container.
 

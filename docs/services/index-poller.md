@@ -76,7 +76,7 @@ dashcam-index-poller/
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DASHCAM_BASE_URL=http://192.168.68.17
 DASHCAM_INDEX_PATH=/blackvue_vod.cgi
 POLL_INTERVAL_SECONDS=60
@@ -248,7 +248,7 @@ Pipeline stages:
 1. Checkout.
 2. Install Python dependencies.
 3. Run parser, path validation, and poller tests.
-4. Sync files to `~/dashcam-index-poller` on `192.168.68.84`.
+4. Sync files to `~/dashcam-index-poller` on `192.168.68.21`.
 5. Create `config/app.env` from example if missing.
 6. Run `docker compose config --quiet`.
 7. Build and restart container.
@@ -257,7 +257,7 @@ Pipeline stages:
 Deploy path:
 
 ```text
-/home/${DEPLOY_USER}/dashcam-index-poller
+192.168.68.21:/home/${DEPLOY_USER}/dashcam-index-poller
 ```
 
 ## Test Plan

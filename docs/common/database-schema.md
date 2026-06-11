@@ -318,7 +318,7 @@ The `dashcam-db-schema` GitHub Actions workflow should:
 2. Start a temporary PostgreSQL container.
 3. Apply all migrations from scratch.
 4. Run schema assertions.
-5. On `main`, SSH to the deployment host and run `scripts/apply_migrations.py` against the configured existing DB.
+5. On `main`, SSH to deployment host `192.168.68.21` and run `scripts/apply_migrations.py` against PostgreSQL `192.168.68.22`.
 6. Print the current migration version and table counts.
 
 Production migrations should be additive by default. Destructive migrations require a manual backup and an explicit workflow dispatch input.

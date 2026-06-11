@@ -69,7 +69,7 @@ dashcam-pcloud-uploader/
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DOWNLOAD_DIR=/downloads
 PCLOUD_USERNAME=<set-username>
 PCLOUD_PASSWORD=<set-password>
@@ -275,7 +275,7 @@ Stages:
 3. Run pCloud client tests with mocked API responses.
 4. Run DB claim/state transition tests.
 5. Validate Docker compose.
-6. Deploy to `/home/${DEPLOY_USER}/dashcam-pcloud-uploader`.
+6. Deploy to `192.168.68.21:/home/${DEPLOY_USER}/dashcam-pcloud-uploader`.
 7. Preserve `config/app.env`.
 8. Rebuild and restart container.
 

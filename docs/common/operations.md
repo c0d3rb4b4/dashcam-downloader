@@ -6,10 +6,14 @@ This guide covers shared deployment, monitoring, and recovery procedures for the
 
 ## Deployment Topology
 
+Dashcam services deploy to `192.168.68.21`. The legacy MediaWall service server
+`192.168.68.84` is full and must not be used for these workloads. PostgreSQL is
+on `192.168.68.22`; each service should use a `DATABASE_URL` with that host.
+
 ```mermaid
 flowchart TB
-    Host["Docker host 192.168.68.84"]
-    DB["PostgreSQL server 192.168.68.83"]
+    Host["Docker host 192.168.68.21"]
+    DB["PostgreSQL server 192.168.68.22"]
     Camera["Dashcam 192.168.68.17"]
     PCloud["pCloud"]
     Volume[("Shared download volume")]
@@ -61,7 +65,7 @@ permissions:
   contents: read
 
 env:
-  DEPLOY_HOST: 192.168.68.84
+  DEPLOY_HOST: 192.168.68.21
   DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
   DEPLOY_PATH: /home/${{ secrets.DEPLOY_USER }}/<repo-name>
 
@@ -134,9 +138,9 @@ jobs:
 | Secret | Used by | Storage |
 | --- | --- | --- |
 | `DEPLOY_USER` | GitHub Actions | GitHub repository secret |
-| `DATABASE_URL` | all services | `config/app.env` on deployment host |
-| `PCLOUD_USERNAME` | uploader, retention manager | `config/app.env` on deployment host |
-| `PCLOUD_PASSWORD` | uploader, retention manager | `config/app.env` on deployment host |
+| `DATABASE_URL` | all services | `config/app.env` on `192.168.68.21`; value points at PostgreSQL `192.168.68.22` |
+| `PCLOUD_USERNAME` | uploader, retention manager | `config/app.env` on `192.168.68.21` |
+| `PCLOUD_PASSWORD` | uploader, retention manager | `config/app.env` on `192.168.68.21` |
 
 Do not commit real credentials. `config/app.env.example` should contain placeholders only.
 
@@ -245,7 +249,7 @@ WHERE state = 'uploading'
 
 Runtime service rollback:
 
-1. SSH to the deployment host.
+1. SSH to the deployment host `192.168.68.21`.
 2. `cd ~/repo-name`.
 3. `git checkout <known-good-sha>` if the host keeps git metadata, or redeploy the previous artifact.
 4. `docker compose down`.

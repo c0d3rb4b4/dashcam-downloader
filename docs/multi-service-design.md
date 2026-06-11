@@ -2,7 +2,10 @@
 
 ## Summary
 
-Split the current `dashcam-downloader` worker into five independently deployed runtime services plus one schema repo. The services coordinate through an existing PostgreSQL database server:
+Split the deprecated `dashcam-downloader` worker into five independently
+deployed runtime services plus one schema repo. The services coordinate through
+the PostgreSQL server at `192.168.68.22` and run on the dashcam deployment host
+at `192.168.68.21`.
 
 | Repo | Service | Responsibility |
 | --- | --- | --- |
@@ -13,7 +16,18 @@ Split the current `dashcam-downloader` worker into five independently deployed r
 | [`dashcam-pcloud-retention-manager`](services/pcloud-retention-manager.md) | `dashcam-pcloud-retention-manager` | Delete oldest pCloud files when the folder size or account free-space threshold is breached. |
 | [`dashcam-db-schema`](services/db-schema.md) | none | Own database migrations and shared schema documentation. |
 
-The current `dashcam-downloader` repo should stay as the design source until the split is implemented, then either be archived or converted into a documentation/meta repo.
+The old `dashcam-downloader` code is deprecated. Keep it only as a migration
+reference until the split services are implemented; do not deploy new dashcam
+workloads from it.
+
+## Deployment Topology
+
+| Role | Address | Notes |
+| --- | --- | --- |
+| Dashcam deployment host | `192.168.68.21` | Runs all split dashcam runtime services and the schema migration tooling. |
+| Dashcam PostgreSQL server | `192.168.68.22` | Owns `dashcam_files` and migration history. |
+| BlackVue dashcam | `192.168.68.17` | Source VOD index and MP4 recordings. |
+| Legacy service server | `192.168.68.84` | Full; do not deploy new dashcam services here. |
 
 Private repo creation command:
 
@@ -52,7 +66,7 @@ Common references:
 ```mermaid
 flowchart LR
     Camera["BlackVue Dashcam index"]
-    DB[("PostgreSQL existing DB server")]
+    DB[("PostgreSQL 192.168.68.22")]
     Local[("Local download path")]
     PCloud["pCloud folder"]
 
@@ -212,7 +226,7 @@ SET
 Config:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DASHCAM_BASE_URL=http://192.168.68.17
 DASHCAM_INDEX_PATH=/blackvue_vod.cgi
 POLL_INTERVAL_SECONDS=60
@@ -263,7 +277,7 @@ RETURNING f.*;
 Config:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DOWNLOAD_DIR=/downloads
 WORKER_ID=dashcam-file-downloader-1
 BATCH_SIZE=5
@@ -316,7 +330,7 @@ RETURNING f.*;
 Config:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 PCLOUD_USERNAME=<set-username>
 PCLOUD_PASSWORD=<set-password>
 PCLOUD_DESTINATION_ROOT=/Dashcam
@@ -343,7 +357,7 @@ Implementation rules:
 Config:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DOWNLOAD_DIR=/downloads
 WORKER_ID=dashcam-local-cleaner-1
 BATCH_SIZE=100
@@ -368,7 +382,7 @@ Implementation rules:
 Config:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 PCLOUD_USERNAME=<set-username>
 PCLOUD_PASSWORD=<set-password>
 PCLOUD_DESTINATION_ROOT=/Dashcam
@@ -431,7 +445,9 @@ sequenceDiagram
 - Logging: JSON logs with `service`, `version`, `worker_id`, row id, path, state, and attempt count.
 - Database library: `psycopg` v3 or SQLAlchemy Core; avoid ORM-specific behavior for queue claiming.
 - Migrations: `dashcam-db-schema` owns SQL migrations. Services should not auto-create tables at startup.
-- Deployment: each service deploys independently to the same host or Docker environment, with shared access to the DB and the configured download volume.
+- Deployment: each service deploys independently to `192.168.68.21`, with
+  shared access to PostgreSQL `192.168.68.22` and the configured download
+  volume.
 
 ## Failure Handling
 
@@ -488,7 +504,7 @@ WHERE id = $1 AND state = 'download-failed';
 
 ## Migration Path From Current Repo
 
-1. Create `dashcam-db-schema` and apply the `dashcam_files` migration to the existing DB server.
+1. Create `dashcam-db-schema` and apply the `dashcam_files` migration to PostgreSQL `192.168.68.22` from the deployment host `192.168.68.21`.
 2. Create `dashcam-index-poller` by moving the current index parsing and polling logic into its own repo.
 3. Create `dashcam-file-downloader` by moving the current download logic into its own repo and replacing the in-memory queue with DB claims.
 4. Create `dashcam-pcloud-uploader` with pCloud credentials stored only in `config/app.env` or deployment secrets.

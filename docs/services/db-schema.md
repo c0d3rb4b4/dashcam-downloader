@@ -4,7 +4,7 @@ Related docs: [overview](../multi-service-design.md), [shared contracts](../comm
 
 ## Purpose
 
-`dashcam-db-schema` owns the PostgreSQL schema for the dashcam pipeline. It has no long-running runtime service. Its job is to version, test, and apply migrations to the existing database server.
+`dashcam-db-schema` owns the PostgreSQL schema for the dashcam pipeline. It has no long-running runtime service. Its job is to version, test, and apply migrations to PostgreSQL `192.168.68.22`.
 
 Detailed schema definitions are in [../common/database-schema.md](../common/database-schema.md).
 
@@ -95,11 +95,11 @@ flowchart TD
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 LOG_LEVEL=INFO
 ```
 
-The deploy workflow should source `DATABASE_URL` from the production `config/app.env` on the deployment host, not from GitHub logs.
+The deploy workflow should source `DATABASE_URL` from the production `config/app.env` on deployment host `192.168.68.21`, not from GitHub logs.
 
 ## GitHub Actions Pipeline
 
@@ -111,7 +111,7 @@ Stages:
 4. Apply all migrations to temporary DB.
 5. Run schema contract tests.
 6. Upload schema dump as artifact for review.
-7. On `main`, sync repo to `/home/${DEPLOY_USER}/dashcam-db-schema`.
+7. On `main`, sync repo to `192.168.68.21:/home/${DEPLOY_USER}/dashcam-db-schema`.
 8. Run `scripts/apply_migrations.py`.
 9. Run `scripts/check_migrations.py`.
 

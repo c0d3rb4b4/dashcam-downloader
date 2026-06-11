@@ -70,7 +70,7 @@ dashcam-file-downloader/
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DOWNLOAD_DIR=/downloads
 WORKER_ID=dashcam-file-downloader-1
 BATCH_SIZE=5
@@ -265,7 +265,7 @@ Stages:
 2. Run unit tests.
 3. Run integration tests with fake dashcam HTTP responses.
 4. Validate Docker compose.
-5. Deploy to `/home/${DEPLOY_USER}/dashcam-file-downloader`.
+5. Deploy to `192.168.68.21:/home/${DEPLOY_USER}/dashcam-file-downloader`.
 6. Preserve `config/app.env` and `downloads`.
 7. Rebuild and restart container.
 8. Print logs and `docker compose ps`.

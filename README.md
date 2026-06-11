@@ -1,5 +1,26 @@
 # dashcam-downloader
 
+Deprecated monolithic downloader for BlackVue dashcam recordings.
+
+This repository contains the old single-process downloader implementation. Do
+not deploy new dashcam download services from this code. The replacement design
+is split across `dashcam-db-schema`, `dashcam-index-poller`,
+`dashcam-file-downloader`, `dashcam-pcloud-uploader`,
+`dashcam-local-cleaner`, and `dashcam-pcloud-retention-manager`.
+
+Current topology for the replacement services:
+
+- Deployment host: `192.168.68.21` (new dashcam Docker host).
+- Database host: `192.168.68.22` (PostgreSQL).
+- Dashcam host: `192.168.68.17`.
+- Legacy service server `192.168.68.84` is full and must not be used for the
+  new dashcam services.
+
+The split-service design docs live in `docs/` here and have also been copied
+into `mediawall-documents/dashcam/` as the canonical MediaWall documentation.
+
+## Legacy Behavior
+
 Background downloader for BlackVue dashcam recordings.
 
 The service polls the dashcam VOD index, parses completed recording entries, and downloads each video file to local storage. Downloads happen in a separate worker thread so polling can continue while files are transferring.

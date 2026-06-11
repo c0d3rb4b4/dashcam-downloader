@@ -117,7 +117,7 @@ pCloud paths:
 Common variables:
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 WORKER_ID=<service-instance-id>
 BATCH_SIZE=10
 IDLE_SLEEP_SECONDS=10

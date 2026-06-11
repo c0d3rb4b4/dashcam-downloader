@@ -62,7 +62,7 @@ dashcam-local-cleaner/
 ## Configuration
 
 ```env
-DATABASE_URL=postgresql://mediawall:<password>@192.168.68.83:5432/mediawall
+DATABASE_URL=postgresql://mediawall:<password>@192.168.68.22:5432/mediawall
 DOWNLOAD_DIR=/downloads
 WORKER_ID=dashcam-local-cleaner-1
 BATCH_SIZE=100
@@ -191,7 +191,7 @@ Stages:
 2. Run unit tests.
 3. Run filesystem safety tests.
 4. Validate Docker compose.
-5. Deploy to `/home/${DEPLOY_USER}/dashcam-local-cleaner`.
+5. Deploy to `192.168.68.21:/home/${DEPLOY_USER}/dashcam-local-cleaner`.
 6. Preserve `config/app.env` and `downloads`.
 7. Build and restart container.
 
